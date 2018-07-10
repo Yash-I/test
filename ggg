@@ -1,0 +1,143 @@
+package j4.lesson12_16k1105;
+
+import java.io.*;
+import java.net.*;
+import java.util.Scanner;
+import java.util.regex.Pattern;
+
+import javafx.application.*;
+import javafx.stage.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import javafx.scene.input.*;
+import javafx.event.*;
+
+public class FTPClient extends Application {
+
+	public static final String HOST = "localhost";
+	public static final int PORT = 10000;
+	private TextArea ta;
+	private Button bt1, bt2, bt3, bt4;
+	private Label lb;
+	private TextField tf;
+	private File flr;
+
+	public static void main(String[] args) {
+		launch(args);
+	}
+
+	public void start(Stage stage) throws Exception {
+		// コントロールの作成
+		ta = new TextArea("Click Choose File First! \nThen Click Send File Button !\n");
+		bt1 = new Button("Choose File");
+		bt2 = new Button("Upload File");
+		bt3 = new Button("Read Directry");
+		bt4 = new Button("Download FIle");
+		bt1.setFont(new Font("Arial", 12));
+		bt2.setFont(new Font("Arial", 12));
+		bt3.setFont(new Font("Arial", 12));
+		bt4.setFont(new Font("Arial", 12));
+		lb = new Label("File Name: ");
+		lb.setFont(new Font("Arial", 12));
+		tf = new TextField("Type message here");
+		tf.setFont(new Font("Arial", 12));
+		tf.setPrefColumnCount(15);
+
+		HBox hb = new HBox();
+		hb.getChildren().addAll(bt1, bt2, bt3, bt4);
+
+		hb.getChildren().add(lb);
+		hb.getChildren().add(tf);
+		hb.setSpacing(10);
+
+		// ペインの作成
+		BorderPane bp = new BorderPane();
+
+		// ペインへの追加
+		bp.setCenter(ta);
+		bp.setBottom(hb);
+
+		// イベントハンドラの登録
+		bt1.setOnAction(new ChooseEventHandler());
+		bt2.setOnAction(new ConnectEventHandler());
+		bt3.setOnAction(new ChooseEventHandler());
+
+		Scene sc = new Scene(bp, 650, 300);
+		stage.setScene(sc);
+		stage.setTitle("MyClient");
+		stage.show();
+	}
+
+	// イベントハンドラクラス
+	class ConnectEventHandler implements EventHandler<ActionEvent> {
+		public void handle(ActionEvent e) {
+			try {
+				String address = "./Myfile_client/" + tf.getText();
+				Scanner input = new Scanner(new File(address));
+				System.out.println(address);
+				Socket sc = new Socket(HOST, PORT);
+				PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(sc.getOutputStream())));
+				BufferedReader in = new BufferedReader(new InputStreamReader(sc.getInputStream()));
+				out.println(tf.getText());
+				out.flush();//ストリームの終わりの合図
+				String str = null;
+
+				// //Serverに文章を送る
+				while (true) {
+					String line = input.nextLine();// これが入力か！
+					System.out.println("line:" + line);
+					out.println(line + "FUUUUUUUUU");// ここで送ってます
+					// String gg = in.readLine()+"fuuu";
+					// System.out.println("Server=>Client: " + gg);
+					if (!input.hasNextLine()) {
+						// input.nextLine().equals("END");
+						break;
+					}
+				}
+				out.flush();//ストリームの終わりの合図
+				// ここから下行けるか＞？ここを消さずにいれば、ServerにちゃんとFile1.txtが入る
+				// while((str = in.readLine()) != null)
+				// ta.appendText(str + "\n");
+				ta.appendText("------- \n");
+				ta.appendText("Cnnection closed, click 接続 to reconnect \n File" + tf.getText() + " is uploaded!");
+				tf.setText("");
+
+				System.out.println("kirimasu");
+				in.close();
+				sc.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+
+	class ChooseEventHandler implements EventHandler<ActionEvent> {
+		public void handle(ActionEvent e) {
+			FileChooser fc = new FileChooser();
+			fc.setInitialDirectory(new File("./Myfile_client"));
+			if (e.getSource() == bt1) {
+				try {
+					System.out.println("bt1 is pressed");
+					ta.clear();
+					flr = fc.showOpenDialog(new Stage());
+					if (flr != null) {
+						lb.setText(" Open File");
+						tf.setText(flr.getName());
+						// BufferedReader br = new BufferedReader(new
+						// FileReader(flr));
+						// String str = null;
+						// while ((str = br.readLine()) != null)
+						// ta.appendText(str + "\n");
+						ta.appendText("File " + flr.getName() + " is chosen!");
+						// br.close();
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
+
+}
