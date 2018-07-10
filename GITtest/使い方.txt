@@ -1,0 +1,6 @@
+server.py起動後
+
+
+http://localhost:8000/cgi-bin/R02/b.py
+
+にアクセス
